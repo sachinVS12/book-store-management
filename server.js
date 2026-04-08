@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/database");
+const userRoutes = require("./routes/userRoutes");
 
 // Load env vars
 dotenv.config();
@@ -14,6 +15,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // Enable CORS
 app.use(cors());
+
+// Mount routes
+app.use("/api/users", userRoutes);
 
 // Root route
 app.get("/", (req, res) => {
