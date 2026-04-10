@@ -2,7 +2,9 @@ const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/database");
+const errorHandler = require("./middleware/errorMiddleware");
 const userRoutes = require("./routes/userRoutes");
+const authorRoutes = require("./routes/authorRoutes");
 
 // Load env vars
 dotenv.config();
@@ -18,6 +20,7 @@ app.use(cors());
 
 // Mount routes
 app.use("/api/users", userRoutes);
+app.use("/api/authors", authorRoutes);
 
 // Root route
 app.get("/", (req, res) => {
