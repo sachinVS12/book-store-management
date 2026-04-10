@@ -5,6 +5,7 @@ const connectDB = require("./config/database");
 const errorHandler = require("./middleware/errorMiddleware");
 const userRoutes = require("./routes/userRoutes");
 const authorRoutes = require("./routes/authorRoutes");
+const bookRoutes = require("./routes/bookRoutes");
 
 // Load env vars
 dotenv.config();
@@ -21,6 +22,7 @@ app.use(cors());
 // Mount routes
 app.use("/api/users", userRoutes);
 app.use("/api/authors", authorRoutes);
+app.use("/api/books", bookRoutes);
 
 // Root route
 app.get("/", (req, res) => {
