@@ -6,6 +6,7 @@ const errorHandler = require("./middleware/errorMiddleware");
 const userRoutes = require("./routes/userRoutes");
 const authorRoutes = require("./routes/authorRoutes");
 const bookRoutes = require("./routes/bookRoutes");
+const orderRoutes = require("./routes/orderRoutes");
 
 // Load env vars
 dotenv.config();
@@ -23,6 +24,7 @@ app.use(cors());
 app.use("/api/users", userRoutes);
 app.use("/api/authors", authorRoutes);
 app.use("/api/books", bookRoutes);
+app.use("/api/orders", orderRoutes);
 
 // Root route
 app.get("/", (req, res) => {
@@ -33,6 +35,7 @@ app.get("/", (req, res) => {
       books: "/api/books",
       authors: "/api/authors",
       users: "/api/users",
+      orders: "/api/orders",
     },
   });
 });
