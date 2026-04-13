@@ -7,6 +7,7 @@ const userRoutes = require("./routes/userRoutes");
 const authorRoutes = require("./routes/authorRoutes");
 const bookRoutes = require("./routes/bookRoutes");
 const orderRoutes = require("./routes/orderRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
 
 // Load env vars
 dotenv.config();
