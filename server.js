@@ -26,6 +26,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/authors", authorRoutes);
 app.use("/api/books", bookRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/payments", paymentRoutes);
 
 // Root route
 app.get("/", (req, res) => {
