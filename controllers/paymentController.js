@@ -9,6 +9,15 @@ const paypal = require("@paypal/checkout-server-sdk");
 // @access  Private
 const createStripePaymentIntent = async (req, res) => {
   try {
+    // Check if Stripe is initialized
+    if (!stripe) {
+      return res.status(503).json({
+        success: false,
+        message:
+          "Stripe payment is not configured. Please add STRIPE_SECRET_KEY to .env file",
+      });
+    }
+
     const { orderId } = req.body;
 
     const order = await Order.findById(orderId);
@@ -53,6 +62,7 @@ const createStripePaymentIntent = async (req, res) => {
       paymentIntentId: paymentIntent.id,
     });
   } catch (error) {
+    console.error("Stripe payment error:", error);
     res.status(400).json({ success: false, message: error.message });
   }
 };
@@ -61,6 +71,10 @@ const createStripePaymentIntent = async (req, res) => {
 // @route   POST /api/payments/stripe/webhook
 // @access  Public
 const handleStripeWebhook = async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ message: "Stripe not configured" });
+  }
+
   const sig = req.headers["stripe-signature"];
   let event;
 
@@ -104,6 +118,15 @@ const handleStripeWebhook = async (req, res) => {
 // @access  Private
 const createPayPalOrder = async (req, res) => {
   try {
+    // Check if PayPal is initialized
+    if (!paypalClient.getClient()) {
+      return res.status(503).json({
+        success: false,
+        message:
+          "PayPal payment is not configured. Please add PayPal credentials to .env file",
+      });
+    }
+
     const { orderId } = req.body;
 
     const order = await Order.findById(orderId);
@@ -165,7 +188,7 @@ const createPayPalOrder = async (req, res) => {
       },
     });
 
-    const paypalOrder = await paypalClient.client.execute(request);
+    const paypalOrder = await paypalClient.getClient().execute(request);
 
     // Save payment record
     await Payment.create({
@@ -188,6 +211,7 @@ const createPayPalOrder = async (req, res) => {
       approvalUrl,
     });
   } catch (error) {
+    console.error("PayPal payment error:", error);
     res.status(400).json({ success: false, message: error.message });
   }
 };
@@ -197,12 +221,19 @@ const createPayPalOrder = async (req, res) => {
 // @access  Private
 const capturePayPalOrder = async (req, res) => {
   try {
+    if (!paypalClient.getClient()) {
+      return res.status(503).json({
+        success: false,
+        message: "PayPal payment is not configured",
+      });
+    }
+
     const { paypalOrderId } = req.body;
 
     const request = new paypal.orders.OrdersCaptureRequest(paypalOrderId);
     request.requestBody({});
 
-    const capture = await paypalClient.client.execute(request);
+    const capture = await paypalClient.getClient().execute(request);
 
     const orderId = capture.result.purchase_units[0].reference_id;
 
@@ -218,6 +249,7 @@ const capturePayPalOrder = async (req, res) => {
       throw new Error("Payment not completed");
     }
   } catch (error) {
+    console.error("PayPal capture error:", error);
     res.status(400).json({ success: false, message: error.message });
   }
 };
@@ -301,6 +333,11 @@ const processRefund = async (req, res) => {
 
     switch (payment.paymentMethod) {
       case "stripe":
+        if (!stripe) {
+          return res
+            .status(503)
+            .json({ success: false, message: "Stripe not configured" });
+        }
         const refund = await stripe.refunds.create({
           payment_intent: payment.paymentIntentId,
           amount: amount ? Math.round(amount * 100) : undefined,
@@ -309,7 +346,11 @@ const processRefund = async (req, res) => {
         break;
 
       case "paypal":
-        // PayPal refund logic here
+        if (!paypalClient.getClient()) {
+          return res
+            .status(503)
+            .json({ success: false, message: "PayPal not configured" });
+        }
         const paypalRequest = new paypal.payments.CapturesRefundRequest(
           payment.transactionId,
         );
@@ -319,7 +360,7 @@ const processRefund = async (req, res) => {
             value: (amount || payment.amount).toFixed(2),
           },
         });
-        refundResult = await paypalClient.client.execute(paypalRequest);
+        refundResult = await paypalClient.getClient().execute(paypalRequest);
         break;
 
       default:
@@ -352,6 +393,7 @@ const processRefund = async (req, res) => {
       data: payment,
     });
   } catch (error) {
+    console.error("Refund error:", error);
     res.status(400).json({ success: false, message: error.message });
   }
 };
