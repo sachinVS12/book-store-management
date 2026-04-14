@@ -160,8 +160,8 @@ const createPayPalOrder = async (req, res) => {
         brand_name: "Book Store",
         landing_page: "NO_PREFERENCE",
         user_action: "PAY_NOW",
-        return_url: `${process.env.CLIENT_URL}/payment-success`,
-        cancel_url: `${process.env.CLIENT_URL}/payment-cancel`,
+        return_url: `${process.env.CLIENT_URL || "http://localhost:3000"}/payment-success`,
+        cancel_url: `${process.env.CLIENT_URL || "http://localhost:3000"}/payment-cancel`,
       },
     });
 
@@ -323,10 +323,12 @@ const processRefund = async (req, res) => {
         break;
 
       default:
-        return res.status(400).json({
-          success: false,
-          message: "Refund not supported for this payment method",
-        });
+        return res
+          .status(400)
+          .json({
+            success: false,
+            message: "Refund not supported for this payment method",
+          });
     }
 
     // Update payment record
