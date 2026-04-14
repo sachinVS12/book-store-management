@@ -21,7 +21,7 @@ app.use(express.urlencoded({ extended: true }));
 // Enable CORS
 app.use(cors());
 
-// Mount routes
+// Mount Routes
 app.use("/api/users", userRoutes);
 app.use("/api/authors", authorRoutes);
 app.use("/api/books", bookRoutes);
